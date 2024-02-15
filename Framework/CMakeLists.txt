@@ -18,6 +18,7 @@ find_library(SDL2_image NAMES "SDL2_image")
 message("SDL2 library found in ${SDL2}")
 
 add_library(${MY_LIBNAME} SHARED ./src/launch.cpp)
+target_link_libraries(${MY_LIBNAME} ${SDL2} ${SDL2main} ${SDL2_image})
 set_target_properties(${MY_LIBNAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${MY_LIBNAME} PROPERTIES PUBLIC_HEADER inc/Framework.h)
 
