@@ -39,11 +39,11 @@ struct CScore
 
 struct CLifespan
 {
-  int total = {0};
-  int remaining = {0};
+  unsigned int totalLifespan = 2000;
+  unsigned int instantiationTime;
 
   CLifespan() = default;
-  CLifespan(int total) : total(total), remaining(total)
+  CLifespan(unsigned int t, unsigned int it) : totalLifespan(t), instantiationTime(it)
   {
   }
 };
@@ -76,16 +76,6 @@ public:
   Vec2 halfSize;
   CBoundingBox() = default;
   CBoundingBox(const Vec2 &s) : size{s}, halfSize{s / 2} {}
-};
-
-struct CGravity
-{
-  float gravity = 0.0f;
-
-  CGravity() = default;
-  CGravity(float g) : gravity(g)
-  {
-  }
 };
 
 struct CPlatform

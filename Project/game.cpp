@@ -8,6 +8,7 @@ Game::Game(const std::string &config, int wWidth, int wHeight)
 {
   m_congigPath = config;
   m_windowSize = Vec2(wWidth, wHeight);
+  m_score = wHeight;
   rand_generator = std::mt19937(std::random_device{}());
 }
 
@@ -52,6 +53,7 @@ void Game::sMovement()
   if (m_player->cTransform->position.y < m_cameraYOffset + 200)
   {
     m_cameraYOffset = m_player->cTransform->position.y - 200;
+    m_score = std::abs(m_cameraYOffset - m_windowSize.y);
   }
 }
 
@@ -67,28 +69,6 @@ void Game::sRender()
     }
     else
     {
-    }
-  }
-}
-
-void Game::sLifespan()
-{
-  for (auto e : m_entities.getEntities())
-  {
-    auto lf = e->cLifespan;
-    if (!lf)
-      continue;
-
-    if (lf->remaining > 0)
-    {
-      lf->remaining -= 1.0f;
-      auto uO = (float(lf->remaining) / lf->total) * 255.0f;
-
-      printf("remaining: %d, total: %d, uO: %f\n", lf->remaining, lf->total, uO);
-    }
-    else
-    {
-      e->destroy();
     }
   }
 }
@@ -202,7 +182,6 @@ void Game::sCollision()
     m_player->cSpecialAbility = std::make_shared<CSpecialAbility>("Rocket", 10000, getTickCount());
     auto abilitySprite = m_assets.getSprite("Puca");
     m_player->cSprite = std::make_shared<CSprite>(abilitySprite);
-    m_player->cGravity->gravity = 0;
     m_player->cTransform->velocity.y = -20.0f;
   }
 }
@@ -243,8 +222,6 @@ void Game::spawnPlayer()
 
   player->cTransform = std::make_shared<CTransform>(Vec2(0.0f, yPos), Vec2(0.0f, 0.0f), 0.0f);
   player->cBoundingBox = std::make_shared<CBoundingBox>(Vec2(w, h));
-  player->cLifespan = std::make_shared<CLifespan>(100);
-  player->cGravity = std::make_shared<CGravity>(0.6f);
   player->cInput = std::make_shared<CInput>();
   player->cInput = std::make_shared<CInput>();
 
@@ -256,20 +233,18 @@ void Game::spawnPlayer()
   spawnPlatform(initialPosition);
 }
 
+// refactor, a lot of code duplication
 void Game::sScoreRender()
 {
-
   auto score = m_currentPlatform;
   std::vector<int> digits;
-  digits.push_back(score % 10);
+  digits.insert(digits.begin(), score % 10);
   score /= 10;
   while (score > 0)
   {
-    digits.push_back(score % 10);
+    digits.insert(digits.begin(), score % 10);
     score /= 10;
   }
-
-  std::reverse(digits.begin(), digits.end());
 
   int lastDigitW = 0;
 
@@ -280,6 +255,29 @@ void Game::sScoreRender()
     getSpriteSize(sprite, w, h);
 
     drawSprite(sprite, 10 + lastDigitW, 10);
+    lastDigitW += w;
+  }
+
+  digits.clear();
+
+  score = m_score;
+  digits.insert(digits.begin(), score % 10);
+  score /= 10;
+  while (score > 0)
+  {
+    digits.insert(digits.begin(), score % 10);
+    score /= 10;
+  }
+
+  lastDigitW = 0;
+
+  for (auto d : digits)
+  {
+    auto sprite = m_assets.getSprite(std::to_string(d));
+    int w, h;
+    getSpriteSize(sprite, w, h);
+
+    drawSprite(sprite, 10 + lastDigitW, 50);
     lastDigitW += w;
   }
 }
@@ -376,6 +374,7 @@ void Game::spawnPlatform(Vec2 &pos)
   platform->cTransform = std::make_shared<CTransform>(pos, Vec2(0.0f, 0.0f), 0.0f);
   platform->cBoundingBox = std::make_shared<CBoundingBox>(Vec2(w, h));
   platform->cPlatform = std::make_shared<CPlatform>(m_totalPlatforms);
+  platform->cLifespan = std::make_shared<CLifespan>(2000, getTickCount());
 
   m_lastPlatformPos = platform->cTransform->position;
 
@@ -426,9 +425,11 @@ void Game::sCleaner()
   {
     if (e->cTransform->position.y > m_cameraYOffset + m_windowSize.y)
       e->destroy();
+    if (getTickCount() - e->cLifespan->instantiationTime > e->cLifespan->totalLifespan)
+      e->cSprite = nullptr;
   }
 
-  // TODO: clean up boolets
+  // TODO: clean up bullets
   for (auto e : m_entities.getEntities("bullet"))
   {
     if (e->cTransform->position.y > m_cameraYOffset + m_windowSize.y || e->cTransform->position.y < m_cameraYOffset)
@@ -447,7 +448,6 @@ void Game::sCleaner()
     {
       m_player->cSpecialAbility = nullptr;
       auto playerSprite = m_assets.getSprite("Right");
-      m_player->cGravity->gravity = 0.6f;
       m_player->cSprite->s = playerSprite;
     }
   }

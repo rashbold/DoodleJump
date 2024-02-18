@@ -20,8 +20,7 @@ class Game : public Framework
   ActionMap m_actionMap;
 
   std::string m_congigPath;
-
-  Vec2 m_windowSize = Vec2(800, 600);
+  Vec2 m_windowSize;
 
   unsigned m_score = 0;
   unsigned int m_totalPlatforms = 0;
@@ -64,7 +63,6 @@ public:
 
   void sMovement();
   void sRender();
-  void sLifespan();
   void sCollision();
   void sScoreRender();
   void sPlatformSpawner();

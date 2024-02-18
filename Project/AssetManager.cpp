@@ -1,6 +1,12 @@
 #include "AssetManager.h"
 #include <cassert>
 
+AssetManager::~AssetManager()
+{
+  for (auto sprite : m_spriteMap)
+    destroySprite(sprite.second);
+}
+
 void AssetManager::loadFromFile(const std::string &path)
 {
   std::ifstream file(path);
