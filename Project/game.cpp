@@ -4,9 +4,6 @@
 #include <random>
 #include "Physics.h"
 
-constexpr int FPS = 60;
-constexpr int MPF = 1000 / FPS;
-
 Game::Game(const std::string &config, int wWidth, int wHeight)
 {
   m_congigPath = config;
@@ -98,12 +95,51 @@ void Game::sLifespan()
 
 void Game::sCollision()
 {
+  // coll of player with walls
+  Vec2 playerPos = m_player->cTransform->position;
+  Vec2 playerSize = m_player->cBoundingBox->size;
+
+  if (playerPos.x + playerSize.x < 0)
+    m_player->cTransform->position.x = m_windowSize.x - playerSize.x;
+  if (playerPos.x > m_windowSize.x)
+    m_player->cTransform->position.x = 0;
+  if (playerPos.y + playerSize.y > m_windowSize.y)
+    setupScene();
+
+  // coll of bullets with walls
+  for (auto bullet : m_entities.getEntities("bullet"))
+  {
+    Vec2 &pos = bullet->cTransform->position;
+    Vec2 size = bullet->cBoundingBox->size;
+    if (pos.x + size.x < 0)
+      pos.x = m_windowSize.x - size.x;
+    if (pos.x > m_windowSize.x)
+      pos.x = 0;
+  }
+
+  // coll of enemy with bullets
+  for (auto enemy : m_entities.getEntities("enemy"))
+  {
+    for (auto bullet : m_entities.getEntities("bullet"))
+    {
+      auto overlap = Physics::GetOverlap(enemy, bullet);
+      if (overlap.x < 0 || overlap.y < 0)
+        continue;
+
+      enemy->destroy();
+      bullet->destroy();
+    }
+  }
+
+  // all of the bellow doesn't make sence
+  // if player has special ability attached
+  // so return early
+  if (m_player->cSpecialAbility)
+    return;
+
   // coll of player with platforms
   for (auto &platform : m_entities.getEntities("platform"))
   {
-    if (m_player->cSpecialAbility)
-      break;
-
     auto overlap = Physics::GetOverlap(m_player, platform);
     auto previousOverlap = Physics::GetPreviousOverlap(m_player, platform);
 
@@ -119,31 +155,16 @@ void Game::sCollision()
     {
 
       m_currentPlatform = platform->cPlatform->score;
-
       bool jumpedSamePlatform = m_lastJumpedPlatform == m_currentPlatform;
-      if (jumpedSamePlatform && m_jumpTime > m_minJumpTime)
-      {
-        playerPos.y -= overlap.y;
 
+      if (jumpedSamePlatform && m_jumpTime > m_minJumpTime)
         m_jumpTime /= 1.15;
 
-        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
-        std::cout << "new jump time: " << m_jumpTime << std::endl;
-      }
       else if (!jumpedSamePlatform && m_jumpTime < m_maxJumpTime)
-      {
-        playerPos.y -= overlap.y;
-
         m_jumpTime *= 1.15;
 
-        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
-        std::cout << "new jump time: " << m_jumpTime << std::endl;
-      }
-      else
-      {
-        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
-        playerPos.y -= overlap.y;
-      }
+      m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
+      playerPos.y -= overlap.y;
 
       m_lastJumpedPlatform = m_currentPlatform;
     }
@@ -152,9 +173,6 @@ void Game::sCollision()
   // coll of player with enemies
   for (auto enemy : m_entities.getEntities("enemy"))
   {
-    if (m_player->cSpecialAbility)
-      break;
-
     auto overlap = Physics::GetOverlap(m_player, enemy);
     if (overlap.x < 0 || overlap.y < 0)
       continue;
@@ -173,48 +191,9 @@ void Game::sCollision()
       setupScene();
   }
 
-  // coll of enemy with bullets
-  for (auto enemy : m_entities.getEntities("enemy"))
-  {
-    for (auto bullet : m_entities.getEntities("bullet"))
-    {
-      auto overlap = Physics::GetOverlap(enemy, bullet);
-      if (overlap.x < 0 || overlap.y < 0)
-        continue;
-
-      enemy->destroy();
-      bullet->destroy();
-    }
-  }
-
-  // coll of player with walls
-  Vec2 pos = m_player->cTransform->position;
-  Vec2 size = m_player->cBoundingBox->size;
-
-  if (pos.x + size.x < 0)
-    m_player->cTransform->position.x = m_windowSize.x - size.x;
-  if (pos.x > m_windowSize.x)
-    m_player->cTransform->position.x = 0;
-  if (pos.y + size.y > m_windowSize.y)
-    setupScene();
-
-  // coll of bullets with walls
-  for (auto bullet : m_entities.getEntities("bullet"))
-  {
-    Vec2 &pos = bullet->cTransform->position;
-    Vec2 size = bullet->cBoundingBox->size;
-    if (pos.x + size.x < 0)
-      pos.x = m_windowSize.x - size.x;
-    if (pos.x > m_windowSize.x)
-      pos.x = 0;
-  }
-
   // coll of player with abilities
   for (auto ability : m_entities.getEntities("Box"))
   {
-    if (m_player->cSpecialAbility)
-      break;
-
     auto overlap = Physics::GetOverlap(m_player, ability);
     if (overlap.x < 0 || overlap.y < 0)
       continue;

@@ -10,6 +10,9 @@
 
 using ActionMap = std::map<int, std::string>;
 
+constexpr int FPS = 60;
+constexpr int MPF = 1000 / FPS;
+
 class Game : public Framework
 {
   EntityManager m_entities;
