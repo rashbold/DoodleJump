@@ -1,4 +1,5 @@
 #include "Physics.h"
+#include "Game.h"
 
 #include <iostream>
 
@@ -35,4 +36,14 @@ Vec2 Physics::GetPreviousOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Enti
   auto oy = aBB.y + bBB.y - delta.y;
 
   return Vec2(ox, oy);
+}
+
+float Physics::GetJumpVelocity(float timeToPeak)
+{
+  return (2 * JUMP_HEIGHT / timeToPeak) * -1;
+}
+
+float Physics::GetJumpGravity(float timeToPeak)
+{
+  return ((-2 * JUMP_HEIGHT) / (timeToPeak * timeToPeak) * -1);
 }

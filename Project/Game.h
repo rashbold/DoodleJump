@@ -23,11 +23,16 @@ class Game : public Framework
   unsigned m_score = 0;
   unsigned int m_totalPlatforms = 0;
   unsigned int m_currentPlatform = 1;
+  unsigned int m_lastJumpedPlatform = 1;
   Vec2 m_lastPlatformPos = Vec2(0.0f, 0.0f);
   Vec2 m_mousePos;
   std::random_device rand_dev;
   std::mt19937 rand_generator;
   int m_cameraYOffset = 0;
+
+  float m_jumpTime = 0.45f;
+  float m_maxJumpTime = 3 * m_jumpTime;
+  float m_minJumpTime = 0.5f * m_jumpTime;
 
   std::shared_ptr<Entity> m_player;
 

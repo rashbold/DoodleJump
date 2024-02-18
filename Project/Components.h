@@ -1,19 +1,15 @@
 #pragma once
 
 #include "Framework.h"
-
 #include "Vec2.h"
 
-class CTransform
+struct CTransform
 {
-public:
   Vec2 position = {0.0, 0.0};
   Vec2 prevPos = {0.0, 0.0};
   Vec2 velocity = {0.0, 0.0};
-  // dis: what's the diff between {} and below initializers
   float angle = 0.0;
 
-  // dis: what does exactly default constructor mean?
   CTransform() = default;
   CTransform(const Vec2 &p, const Vec2 &v, float a)
       : position{p}, prevPos{p}, velocity{v}, angle{a}
@@ -21,9 +17,8 @@ public:
   }
 };
 
-class CCollision
+struct CCollision
 {
-public:
   float radius = {0.0};
 
   CCollision() = default;
@@ -32,9 +27,8 @@ public:
   }
 };
 
-class CScore
+struct CScore
 {
-public:
   int score = {0};
 
   CScore() = default;
@@ -43,9 +37,8 @@ public:
   }
 };
 
-class CLifespan
+struct CLifespan
 {
-public:
   int total = {0};
   int remaining = {0};
 
@@ -55,9 +48,8 @@ public:
   }
 };
 
-class CInput
+struct CInput
 {
-public:
   bool left = false;
   bool right = false;
   bool up = false;

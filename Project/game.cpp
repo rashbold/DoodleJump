@@ -28,7 +28,6 @@ bool Game::Tick()
   sUserInput();
   sMovement();
   sCollision();
-  // drawTestBackground();
   sCleaner();
   sPlatformSpawner();
   sScoreRender();
@@ -39,8 +38,12 @@ bool Game::Tick()
 
 void Game::sMovement()
 {
-  auto playerGravity = m_player->cGravity->gravity;
-  m_player->cTransform->velocity.y += playerGravity;
+
+  if (!m_player->cSpecialAbility)
+  {
+    float gravity = Physics::GetJumpGravity(m_jumpTime);
+    m_player->cTransform->velocity.y += gravity / FPS;
+  }
 
   for (auto e : m_entities.getEntities())
   {
@@ -107,23 +110,42 @@ void Game::sCollision()
     if (overlap.x < 0 || overlap.y < 0 || previousOverlap.x < 0)
       continue;
 
-    auto playerPos = m_player->cTransform->position;
-    auto playerPreviousPos = m_player->cTransform->prevPos;
-    auto platformPos = platform->cTransform->position;
-
-    auto playerBBOX = m_player->cBoundingBox->size;
-    auto playerPreviousBottom = playerPreviousPos.y + playerBBOX.y;
-    auto platformTop = platformPos.y;
-    bool movingDown = playerPos.y > playerPreviousPos.y;
+    auto playerTransform = m_player->cTransform;
+    auto &playerPos = playerTransform->position;
+    auto playerPreviousPos = playerTransform->prevPos;
 
     // moving down and was above
-    if (movingDown && playerPreviousBottom <= platformTop)
+    if (playerPos.y > playerPreviousPos.y && playerPreviousPos.y + m_player->cBoundingBox->size.y <= platform->cTransform->position.y)
     {
-      m_currentPlatform = platform->cPlatform->score;
-      std::cout << "Current platform: " << m_currentPlatform << std::endl;
 
-      m_player->cTransform->position.y -= overlap.y;
-      m_player->cTransform->velocity.y = -15.0f;
+      m_currentPlatform = platform->cPlatform->score;
+
+      bool jumpedSamePlatform = m_lastJumpedPlatform == m_currentPlatform;
+      if (jumpedSamePlatform && m_jumpTime > m_minJumpTime)
+      {
+        playerPos.y -= overlap.y;
+
+        m_jumpTime /= 1.15;
+
+        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
+        std::cout << "new jump time: " << m_jumpTime << std::endl;
+      }
+      else if (!jumpedSamePlatform && m_jumpTime < m_maxJumpTime)
+      {
+        playerPos.y -= overlap.y;
+
+        m_jumpTime *= 1.15;
+
+        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
+        std::cout << "new jump time: " << m_jumpTime << std::endl;
+      }
+      else
+      {
+        m_player->cTransform->velocity.y = Physics::GetJumpVelocity(m_jumpTime);
+        playerPos.y -= overlap.y;
+      }
+
+      m_lastJumpedPlatform = m_currentPlatform;
     }
   }
 
@@ -198,7 +220,7 @@ void Game::sCollision()
       continue;
 
     ability->destroy();
-    m_player->cSpecialAbility = std::make_shared<CSpecialAbility>("Rocket", 2000, getTickCount());
+    m_player->cSpecialAbility = std::make_shared<CSpecialAbility>("Rocket", 10000, getTickCount());
     auto abilitySprite = m_assets.getSprite("Puca");
     m_player->cSprite = std::make_shared<CSprite>(abilitySprite);
     m_player->cGravity->gravity = 0;
