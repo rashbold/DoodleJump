@@ -1,9 +1,19 @@
 
 
-#include "GameEngine.h"
+#include "Game.h"
 
 int main(int argc, char *argv[])
 {
-  auto game = new GameEngine();
-  return run(game);
+  int wWidth = 800;
+  int wHeight = 600;
+
+  if (argc >= 4 && !strcmp(argv[1], "-window"))
+  {
+    std::cout << "Invalid command line arguments" << std::endl;
+    wWidth = std::stoi(argv[2]);
+    wHeight = std::stoi(argv[3]);
+  }
+
+  auto game = new Game("assets.txt", wWidth, wHeight);
+  run(game);
 }
