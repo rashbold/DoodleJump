@@ -18,6 +18,6 @@ int main(int argc, char *argv[])
     }
   }
 
-  auto game = new Game("assets.txt", wWidth, wHeight);
+  auto game = new Game("Project/assets.txt", wWidth, wHeight);
   run(game);
 }

@@ -326,14 +326,9 @@ void Game::spawnSpecialAbility(std::shared_ptr<Entity> e)
 
 void Game::sPlatformSpawner()
 {
-  int totalPlatforms = m_entities.getEntities("platform").size();
-  // std::cout << "total platforms: " << totalPlatforms << std::endl;
-
   // TODO: # have to also count platform size
   if (m_lastPlatformPos.y < m_cameraYOffset || m_lastPlatformPos.y > m_cameraYOffset + m_windowSize.y)
-  {
     return;
-  }
 
   std::uniform_int_distribution<int> pwDist(50, 150);
   std::uniform_int_distribution<int> nwDist(-150, -50);
@@ -461,6 +456,7 @@ void Game::setupScene()
   }
   m_totalPlatforms = 0;
   m_currentPlatform = 1;
+  m_score = m_windowSize.y;
   spawnPlayer();
   m_cameraYOffset = 0;
 }

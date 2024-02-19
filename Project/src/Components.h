@@ -80,7 +80,6 @@ public:
 
 struct CPlatform
 {
-  bool scored = false;
   unsigned int score = 0;
   CPlatform() = default;
   CPlatform(unsigned int s) : score(s)
