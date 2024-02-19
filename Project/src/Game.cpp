@@ -310,7 +310,6 @@ void Game::spawnEnemy(std::shared_ptr<Entity> e)
 void Game::spawnSpecialAbility(std::shared_ptr<Entity> e)
 {
   // TODO: choose random special ability
-  // auto newPlayerSprite = m_assets.getSprite("Puca");
   auto ability = m_entities.addEntity("Box");
   auto sprite = m_assets.getSprite("Box");
 
@@ -326,7 +325,7 @@ void Game::spawnSpecialAbility(std::shared_ptr<Entity> e)
 
 void Game::sPlatformSpawner()
 {
-  // TODO: # have to also count platform size
+  // TODO: have to also count platform size
   if (m_lastPlatformPos.y < m_cameraYOffset || m_lastPlatformPos.y > m_cameraYOffset + m_windowSize.y)
     return;
 
@@ -424,7 +423,6 @@ void Game::sCleaner()
       e->cSprite = nullptr;
   }
 
-  // TODO: clean up bullets
   for (auto e : m_entities.getEntities("bullet"))
   {
     if (e->cTransform->position.y > m_cameraYOffset + m_windowSize.y || e->cTransform->position.y < m_cameraYOffset)
@@ -459,6 +457,7 @@ void Game::setupScene()
   m_score = m_windowSize.y;
   spawnPlayer();
   m_cameraYOffset = 0;
+  m_jumpTime = 0.45f; // doesn't have to ve hardcoded
 }
 
 void Game::PreInit(int &width, int &height, bool &fullscreen)

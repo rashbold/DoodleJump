@@ -18,8 +18,7 @@ void EntityManager::removeDeadEntities(EnitityVec &vec)
 
 EntityManager::EntityManager()
 {
-  // take a look at the reserv method later
-  // m_entities.reserve(10);
+  m_entities.reserve(10);
 }
 
 std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
@@ -40,11 +39,6 @@ EnitityVec EntityManager::getEntities(const std::string &tag)
   return m_entityMap[tag];
 }
 
-const std::map<std::string, EnitityVec> &EntityManager::getEntityMap()
-{
-  return m_entityMap;
-}
-
 void EntityManager::update()
 {
   for (auto &e : m_entitiesToAdd)
@@ -53,7 +47,6 @@ void EntityManager::update()
     m_entityMap[e->m_tag].push_back(e);
   }
 
-  // // Probably removeDeadEntities here. Like:
   for (auto &[tag, enityVec] : m_entityMap)
   {
     removeDeadEntities(enityVec);

@@ -24,6 +24,4 @@ public:
 
   EnitityVec getEntities();
   EnitityVec getEntities(const std::string &tag);
-  // need to iterate via map and get different enities tags
-  const std::map<std::string, EnitityVec> &getEntityMap();
 };
